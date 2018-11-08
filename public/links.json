@@ -1,0 +1,28 @@
+{
+    "links": {
+        "sensors": {
+        "link": "http://devices.webofthings.io/pi/sensors/",
+        "title": "List of Sensors"
+        },
+        "actions": {
+        "link": " http://devices.webofthings.io/pi/actions/",
+        "title": "List of actions"
+        },
+        "meta": {
+        "link": "http://w3c.org/schemas/webofthings/",
+        "title": "Metadata"
+        },
+        "self": {
+        "link": " http://devices.webofthings.io/pi/",
+        "title": "Self"
+        },
+        "help": {
+        "link": "http://webofthings.io/docs/pi/",
+        "title": "Documentation"
+        },
+        "ui": {
+        "link": " http://devices.webofthings.io/pi/",
+        "title": "User Interface"
+        }
+    }
+}

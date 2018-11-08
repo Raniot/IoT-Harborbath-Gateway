@@ -6,7 +6,6 @@ var connectionString = 'HostName=raniot-iothub.azure-devices.net;DeviceId=MyRasp
 var clientCloud = DeviceClient.fromConnectionString(connectionString, MqttCloud);
 var mqtt = require('mqtt');
 var client  = mqtt.connect('mqtt://84.238.67.87:2000');
-require('./plug-with-control')
 var mosca = require('mosca');
 var settingsToGateway = { port:2000 }
 var settingsToNotes = { port:2001 }

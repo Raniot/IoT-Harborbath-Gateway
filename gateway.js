@@ -6,6 +6,7 @@ var connectionString = 'HostName=raniot-iothub.azure-devices.net;DeviceId=MyRasp
 var clientCloud = DeviceClient.fromConnectionString(connectionString, MqttCloud);
 var mqtt = require('mqtt');
 var client  = mqtt.connect('mqtt://84.238.67.87:2000');
+
 var mosca = require('mosca');
 var settings = { port:2000 }
 
@@ -51,29 +52,31 @@ client.on('connect', function () {
 })
 
 client.on('message', function (topic, message) {
-  console.log('message: ' + message)
-  var jsonContents = JSON.parse(message);
-  console.log(jsonContents);
-  jsonContents.Sensors.forEach(jsonContent => { 
-    console.log(jsonContent);
-    if(jsonContent.Type == 'Human counter')
-    {
-      counter += jsonContent.Value;
-      if(counter < 0){
-        counter = 0;
-      } else if (counter >= maxCount && gateOpen)
+  if(topic == "Gateway/message") {
+    console.log('message: ' + message)
+    var jsonContents = JSON.parse(message);
+    console.log(jsonContents);
+    jsonContents.Sensors.forEach(jsonContent => { 
+      console.log(jsonContent);
+      if(jsonContent.Type == 'Human counter')
       {
-        closeGates()
-      } else if (!gateOpen) {
-        openGates()
-      }
+        counter += jsonContent.Value;
+        if(counter < 0){
+          counter = 0;
+        } else if (counter >= maxCount && gateOpen)
+        {
+          closeGates()
+        } else if (!gateOpen) {
+          openGates()
+        }
 
-      jsonContents.Sensors[0].Value = counter;
-    }
-  })
-  jsonContents.Timestamp = Date.now();
-  console.log(jsonContents);
-  sendMessageToCloud(jsonContents)
+        jsonContents.Sensors[0].Value = counter;
+      }
+    })
+    jsonContents.Timestamp = Date.now();
+    console.log(jsonContents);
+    sendMessageToCloud(jsonContents)
+  }
 })
 
 

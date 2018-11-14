@@ -5,34 +5,32 @@ var Message = require('azure-iot-device').Message;
 var connectionString = 'HostName=raniot-iothub.azure-devices.net;DeviceId=MyRasp;SharedAccessKey=jmiXcH5OpLZA+DmJSmrZhM4aTHtLVApnMjzghyUUMw0=';
 var clientCloud = DeviceClient.fromConnectionString(connectionString, MqttCloud);
 var mqtt = require('mqtt');
-var client  = mqtt.connect('mqtt://84.238.54.119:3000');
+var client  = mqtt.connect('mqtt://84.238.67.87:2000');
 var mosca = require('mosca');
-var settingsToGateway = { port:3000 }
-var settingsToNotes = { port:3001 }
+var settings = { port:2000 }
 
-var serverToGateway = new mosca.Server(settingsToGateway);
-var serverToNotes = new mosca.Server(settingsToNotes);
+var server = new mosca.Server(settings);
 
-serverToGateway.on('ready', function(){
-console.log("serverToGateway broker ready");
+server.on('ready', function(){
+  
+console.log("server broker ready");
 });
 
-serverToNotes.on('ready', function(){
-console.log("serverToNotes broker ready");
-});
-
-
+var gateCloseMessage = "Close"
+var gateOpenMessage = "Open"
 var counter = 0;
 var maxCount = 150
 var gateOpen = true
 
 function closeGates() {
   gateOpen = false;
+  client.publish('Node/gate', gateCloseMessage); 
   console.log('Gate close');
 }
 
 function openGates() {
   gateOpen = true
+  client.publish('Node/gate', gateOpenMessage);
   console.log('Gate open');
 }
 

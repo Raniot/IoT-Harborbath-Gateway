@@ -20,8 +20,12 @@ console.log("server broker ready");
 var gateCloseMessage = "Close"
 var gateOpenMessage = "Open"
 var counter = 0;
-var maxCount = 150
+var maxCount = 650
 var gateOpen = true
+var timeInterval = 900000 // in ms 900000 = 15 min
+var tempArray = []
+var humidityArray = []
+var luxArray = []
 
 function closeGates() {
   gateOpen = false;
@@ -46,38 +50,122 @@ function sendMessageToCloud(message){
   })
 }
 
+function getAvgOfTemp(){
+  var sum = 0, l = tempArray.length; 
+  for( var i = 0; i < l; i++){
+    sum += tempArray[i];
+  }
+  tempArray = [];
+  if(l == 0){
+    return 0;
+  }
+  return sum / l;
+}
+
+function getAvgOfHumidity(){
+  var sum = 0, l = humidityArray.length;
+  for( var i = 0; i < l; i++){
+    sum += humidityArray[i];
+  }
+  humidityArray = [];
+  if(l == 0){
+    return 0;
+  }
+  return sum / l;
+}
+
+function getAvgOfLux(){
+  var sum = 0, l = luxArray.length;
+  for( var i = 0; i < l; i++){
+    sum += luxArray[i];
+  }
+  luxArray = [];
+  if(l == 0){
+    return 0;
+  }
+  return sum / l;
+}
+
+function senddataToCloud(){
+  var avgTemp = getAvgOfTemp()
+  var avgHumidity = getAvgOfHumidity();
+  var avgLux = getAvgOfLux();
+  
+  var jsonMessage = {};
+  var Sensors = []
+  var temp = {
+    "Type": "Temperature", 
+    "Value": avgTemp, 
+    "Unit": "degrees celcius"
+  }
+
+  var humidity = {
+    "Type": "Humidity", 
+    "Value": avgHumidity, 
+    "Unit": "percentage"
+  }
+
+  var human = {
+    "Type": "Human counter", 
+    "Value": counter, 
+    "Unit": "Humans"
+  }
+
+  var lux = {
+    "Type": "Lux", 
+    "Value": avgLux, 
+    "Unit": "lumen"
+  }
+
+  jsonMessage.Sensors = Sensors;
+  jsonMessage.Sensors.push(temp)
+  jsonMessage.Sensors.push(humidity)
+  jsonMessage.Sensors.push(human)
+  jsonMessage.Sensors.push(lux)
+  jsonMessage.Timestamp = Date.now();
+
+  console.log('data sent to cloud: '+ jsonMessage)
+  sendMessageToCloud(jsonMessage)
+}
+
 client.on('connect', function () {
     console.log('connected')
     client.subscribe('Gateway/message')
+    setInterval(function() {
+      senddataToCloud();
+    }, timeInterval);
 })
 
 client.on('message', function (topic, message) {
   if(topic == "Gateway/message") {
-    console.log('message: ' + message)
     var jsonContents = JSON.parse(message);
-    console.log(jsonContents);
     jsonContents.Sensors.forEach(jsonContent => { 
-      console.log(jsonContent);
       if(jsonContent.Type == 'Human counter')
       {
         counter += jsonContent.Value;
-        if(counter < 0){
-          counter = 0;
-        } else if (counter >= maxCount && gateOpen)
-        {
-          closeGates()
-        } else if (!gateOpen) {
-          openGates()
-        }
-
-        jsonContents.Sensors[0].Value = counter;
+        checkForGate();
+      }
+      else if(jsonContent.Type == 'Temperature'){
+        tempArray.push(jsonContent.Value);
+      }
+      else if(jsonContent.Type == 'Humidity'){
+        humidityArray.push(jsonContent.Value);
+      }
+      else if(jsonContent.Type == 'Lux'){
+        luxArray.push(jsonContent.Value);
       }
     })
-    jsonContents.Timestamp = Date.now();
-    console.log(jsonContents);
-    sendMessageToCloud(jsonContents)
   }
 })
 
-
+function checkForGate(){
+  if(counter < 0){
+    counter = 0;
+  } else if (counter >= maxCount && gateOpen)
+  {
+    closeGates()
+  } else if (!gateOpen && counter < maxCount) {
+    openGates()
+  }
+}
 

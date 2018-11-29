@@ -20,9 +20,9 @@ console.log("server broker ready");
 var gateCloseMessage = "Close"
 var gateOpenMessage = "Open"
 var counter = 0;
-var maxCount = 650
+var maxCount = 20
 var gateOpen = true
-var timeInterval = 2*60*1000 // in ms 900000 = 15 min
+var timeInterval = 5*60*1000 // in ms 900000 = 15 min
 var tempArray = []
 var humidityArray = []
 var luxArray = []

@@ -22,7 +22,7 @@ var gateOpenMessage = "Open"
 var counter = 0;
 var maxCount = 650
 var gateOpen = true
-var timeInterval = 900000 // in ms 900000 = 15 min
+var timeInterval = 2*60*1000 // in ms 900000 = 15 min
 var tempArray = []
 var humidityArray = []
 var luxArray = []
@@ -45,7 +45,7 @@ function sendMessageToCloud(message){
     if (err) {
       console.error('send error: ' + err.toString());
     } else {
-      console.log('message sent');
+      console.log('message sent ' + Date.now());
     }
   })
 }
@@ -124,7 +124,7 @@ function senddataToCloud(){
   jsonMessage.Sensors.push(lux)
   jsonMessage.Timestamp = Date.now();
 
-  console.log('data sent to cloud: '+ jsonMessage)
+  console.log('data sent to cloud: ' + jsonMessage.Timestamp)
   sendMessageToCloud(jsonMessage)
 }
 
@@ -132,12 +132,14 @@ client.on('connect', function () {
     console.log('connected')
     client.subscribe('Gateway/message')
     setInterval(function() {
+      console.log("method called "+ Date.now());
       senddataToCloud();
     }, timeInterval);
 })
 
 client.on('message', function (topic, message) {
   if(topic == "Gateway/message") {
+    console.log("recieved a message: " + message)
     var jsonContents = JSON.parse(message);
     jsonContents.Sensors.forEach(jsonContent => { 
       if(jsonContent.Type == 'Human counter')

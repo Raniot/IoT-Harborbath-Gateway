@@ -108,7 +108,7 @@ function senddataToCloud(){
   var human = {
     "Type": "Human counter", 
     "Value": counter, 
-    "Unit": "Humans"
+    "Unit": "humans"
   }
 
   var lux = {
